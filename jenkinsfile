@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/czogueri/testapp1.git'
+            }
+        }
+        stage('Validate Manifests') {
+            steps {
+                sh 'kubectl apply --dry-run=client -f nginx-deployment.yaml'
+                sh 'kubectl apply --dry-run=client -f nginx-service.yaml'
+            }
+        }
+        stage('Deploy via ArgoCD Sync') {
+            steps {
+                sh 'echo "ArgoCD will auto-sync from GitHub"'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline succeeded - ArgoCD will deploy changes'
+        }
+        failure {
+            echo 'Pipeline failed - check logs'
+        }
+    }
+}
